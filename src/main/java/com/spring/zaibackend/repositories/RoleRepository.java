@@ -1,0 +1,15 @@
+package com.spring.zaibackend.repositories;
+
+
+import com.spring.zaibackend.models.ERole;
+import com.spring.zaibackend.models.Role;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+
+
+@Repository
+public interface RoleRepository extends JpaRepository<Role, Long> {
+    Optional<Role> findByRole(ERole role);
+}
