@@ -1,8 +1,7 @@
 package com.spring.zaibackend.models;
 
-import jakarta.persistence.*;
 
-
+import javax.persistence.*;
 
 @Entity
 @Table(name = "roles")
