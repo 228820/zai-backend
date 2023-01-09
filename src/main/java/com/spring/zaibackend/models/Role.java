@@ -15,24 +15,7 @@ public class Role {
     private ERole role;
 
     public Role() {}
-
-    public Role(ERole role) {
-        this.role = role;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
     public ERole getRole() {
         return role;
-    }
-
-    public void setRole(ERole role) {
-        this.role = role;
     }
 }

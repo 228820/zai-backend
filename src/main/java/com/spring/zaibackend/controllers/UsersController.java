@@ -1,35 +1,38 @@
 package com.spring.zaibackend.controllers;
 
 
-import com.spring.zaibackend.models.ERole;
 import com.spring.zaibackend.models.User;
-import com.spring.zaibackend.repositories.RoleRepository;
-import com.spring.zaibackend.repositories.UserRepository;
+import com.spring.zaibackend.payloads.requests.UpdateRequest;
 import com.spring.zaibackend.security.services.UserDetailsImpl;
+import com.spring.zaibackend.services.UsersService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
+import javax.validation.Valid;
+import java.util.HashMap;
+import java.util.Set;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/users")
 public class UsersController {
     @Autowired
-    UserRepository userRepository;
+    UsersService usersService;
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/")
-    public ResponseEntity<?> getAllUsers() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
-        if(auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ADMIN"))) {
-            return ResponseEntity.ok("Get all users for admin.");
+    public ResponseEntity<?> getAllUsers(@RequestParam int page) {
+        Page<User> users = this.usersService.getAllUsers(true, page);
+        if(users == null) {
+            return ResponseEntity.badRequest().build();
         } else {
-            return ResponseEntity.ok("Get all users for user.");
+            return ResponseEntity.ok(users);
         }
     }
 
@@ -43,9 +46,38 @@ public class UsersController {
             return ResponseEntity.badRequest().build();
         }
 
-        if(this.userRepository.existsById(Long.parseLong(id))) {
-            Optional<User> user = this.userRepository.findById(Long.parseLong(id));
-            return ResponseEntity.ok(user.get());
+        User user = this.usersService.getUserById(Long.parseLong(id));
+        if(user != null) {
+            return ResponseEntity.ok(user);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PutMapping("/{userId}")
+    public ResponseEntity<?> updateUser(@PathVariable("userId") String id, @Valid @RequestBody UpdateRequest updateRequest) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+        Long requestingUserId = userDetails.getId();
+
+        if(requestingUserId != Long.parseLong(id) && auth.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ADMIN"))) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        HashMap<String, String> response = new HashMap<>();
+
+        User user = this.usersService.getUserById(Long.parseLong(id));
+        if(user != null) {
+            try {
+                User updatedUser = this.usersService.updateUserById(user, updateRequest);
+                return ResponseEntity.ok(updatedUser);
+            } catch (DataIntegrityViolationException e) {
+                response.put("message", "Login or email already taken");
+                return ResponseEntity.badRequest().body(response);
+            } catch (IllegalArgumentException e) {
+                response.put("message", "Invalid user data");
+                return ResponseEntity.badRequest().body(response);
+            }
         } else {
             return ResponseEntity.notFound().build();
         }
