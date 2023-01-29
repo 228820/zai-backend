@@ -14,14 +14,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -50,10 +49,12 @@ public class AuthController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtUtils.generateJwtToken(authentication);
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        String role = userDetails.getAuthorities().toArray()[0].toString();
 
         HashMap<String, String> response = new HashMap<>();
         response.put("id", userDetails.getId().toString());
         response.put("accessToken", jwt);
+        response.put("role", role);
 
         return ResponseEntity.ok(response);
     }
@@ -74,19 +75,23 @@ public class AuthController {
         // Create new user's account
         User user = new User(signUpRequest.getUsername(), signUpRequest.getEmail(), encoder.encode(signUpRequest.getPassword()));
 
-        Set<String> strRoles = signUpRequest.getRole();
         Set<Role> roles = new HashSet<>();
+        Role userRole = roleRepository.findByRole(ERole.USER).orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+        roles.add(userRole);
 
-        if (strRoles.contains("user")) {
-            Role userRole = roleRepository.findByRole(ERole.USER).orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-            roles.add(userRole);
-        } else {
-            Role adminRole = roleRepository.findByRole(ERole.ADMIN).orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-            roles.add(adminRole);
-        }
+//        Set<String> strRoles = signUpRequest.getRole();
+//        if (strRoles.contains("user")) {
+//        } else {
+//            Role adminRole = roleRepository.findByRole(ERole.ADMIN).orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+//            roles.add(adminRole);
+//        }
 
         user.setRoles(roles);
-        userRepository.save(user);
+        try {
+            userRepository.save(user);
+        } catch (Exception e) {
+            response.put("Message", e.toString());
+        }
         response.put("Message", "User registered successfully!");
         return ResponseEntity.ok(response);
     }

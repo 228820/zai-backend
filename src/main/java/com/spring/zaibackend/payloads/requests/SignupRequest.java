@@ -16,8 +16,6 @@ public class SignupRequest {
     @Email
     private String email;
 
-    private Set<String> role;
-
     @NotBlank
     @Size(min = 6, max = 40)
     private String password;
@@ -29,7 +27,10 @@ public class SignupRequest {
         return email;
     }
     public String getPassword() { return password; }
-    public Set<String> getRole() {
-        return this.role;
-    }
+
+
+//    private Set<String> role;
+//    public Set<String> getRole() {
+//        return this.role;
+//    }
 }
