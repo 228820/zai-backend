@@ -28,7 +28,7 @@ public class UsersController {
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/")
     public ResponseEntity<?> getAllUsers(@RequestParam int page) {
-        Page<User> users = this.usersService.getAllUsers(true, page);
+        Page<User> users = this.usersService.getAllUsers(page);
         if(users == null) {
             return ResponseEntity.badRequest().build();
         } else {
@@ -36,6 +36,7 @@ public class UsersController {
         }
     }
 
+    @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
     @GetMapping("/{userId}")
     public ResponseEntity<?> getUser(@PathVariable("userId") String id) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -54,6 +55,7 @@ public class UsersController {
         }
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping("/{userId}")
     public ResponseEntity<?> updateUser(@PathVariable("userId") String id, @Valid @RequestBody UpdateRequest updateRequest) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();

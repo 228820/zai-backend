@@ -28,7 +28,7 @@ public class UsersService {
     @Autowired
     PasswordEncoder encoder;
 
-    public Page<User> getAllUsers(boolean isAdmin, int page) {
+    public Page<User> getAllUsers(int page) {
         if(page < 0) {
             return null;
         }
