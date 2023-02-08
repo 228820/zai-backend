@@ -1,22 +1,20 @@
 package com.spring.zaibackend.payloads.requests;
 
-import org.hibernate.validator.constraints.Email;
-import org.hibernate.validator.constraints.NotBlank;
-
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.util.Set;
 
 public class SignupRequest {
-    @NotBlank
+    @NotNull
     @Size(min = 3, max = 20)
     private String username;
 
-    @NotBlank
+    @NotNull
     @Size(max = 50)
     @Email
     private String email;
 
-    @NotBlank
+    @NotNull
     @Size(min = 6, max = 40)
     private String password;
 
@@ -28,9 +26,4 @@ public class SignupRequest {
     }
     public String getPassword() { return password; }
 
-
-//    private Set<String> role;
-//    public Set<String> getRole() {
-//        return this.role;
-//    }
 }

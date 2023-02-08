@@ -55,7 +55,7 @@ public class UsersController {
         }
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
     @PutMapping("/{userId}")
     public ResponseEntity<?> updateUser(@PathVariable("userId") String id, @Valid @RequestBody UpdateRequest updateRequest) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();

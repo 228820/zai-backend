@@ -47,7 +47,11 @@ public class UsersService {
     public User updateUserById(User userToUpdate, UpdateRequest updateRequest) {
         userToUpdate.setUsername(updateRequest.getUsername());
         userToUpdate.setEmail(updateRequest.getEmail());
-        userToUpdate.setPassword(encoder.encode(updateRequest.getPassword()));
+
+
+        if(updateRequest.getPassword() != "") {
+            userToUpdate.setPassword(encoder.encode(updateRequest.getPassword()));
+        }
 
         Set<String> strRoles = updateRequest.getRole();
         Set<Role> roles = new HashSet<>();
